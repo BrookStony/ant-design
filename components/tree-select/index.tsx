@@ -2,12 +2,12 @@ import React from 'react';
 import RcTreeSelect, { TreeNode, SHOW_ALL, SHOW_PARENT, SHOW_CHILD } from 'rc-tree-select';
 import classNames from 'classnames';
 import { TreeSelectProps } from './interface';
-import injectLocale from '../locale-provider/injectLocale';
+import LocaleConsumer from '../locale-provider/LocaleConsumer';
 import warning from '../_util/warning';
 
 export { TreeData, TreeSelectProps } from './interface';
 
-abstract class TreeSelect extends React.Component<TreeSelectProps, any> {
+export default class TreeSelect extends React.Component<TreeSelectProps, any> {
   static TreeNode = TreeNode;
   static SHOW_ALL = SHOW_ALL;
   static SHOW_PARENT = SHOW_PARENT;
@@ -30,15 +30,12 @@ abstract class TreeSelect extends React.Component<TreeSelectProps, any> {
     );
   }
 
-  abstract getLocale();
-
   render() {
-    const locale = this.getLocale();
     const {
       prefixCls,
       className,
       size,
-      notFoundContent = locale.notFoundContent,
+      notFoundContent,
       dropdownStyle,
       ...restProps,
     } = this.props;
@@ -54,18 +51,21 @@ abstract class TreeSelect extends React.Component<TreeSelectProps, any> {
     }
 
     return (
-      <RcTreeSelect
-        {...restProps}
-        prefixCls={prefixCls}
-        className={cls}
-        dropdownStyle={{ maxHeight: '100vh', overflow: 'auto', ...dropdownStyle }}
-        treeCheckable={checkable}
-        notFoundContent={notFoundContent}
-      />
+      <LocaleConsumer
+        componentName="Select"
+        defaultLocale={{}}
+      >
+        {(locale) => (
+          <RcTreeSelect
+            {...restProps}
+            prefixCls={prefixCls}
+            className={cls}
+            dropdownStyle={{ maxHeight: '100vh', overflow: 'auto', ...dropdownStyle }}
+            treeCheckable={checkable}
+            notFoundContent={notFoundContent || locale.notFoundContent}
+          />
+        )}
+      </LocaleConsumer>
     );
   }
 }
-
-// Use Select's locale
-const injectSelectLocale = injectLocale('Select', {});
-export default injectSelectLocale<TreeSelectProps>(TreeSelect as any);

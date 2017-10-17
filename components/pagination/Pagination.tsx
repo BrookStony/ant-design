@@ -2,7 +2,7 @@ import React from 'react';
 import RcPagination from 'rc-pagination';
 import enUS from 'rc-pagination/lib/locale/en_US';
 import classNames from 'classnames';
-import injectLocale from '../locale-provider/injectLocale';
+import LocaleConsumer from '../locale-provider/LocaleConsumer';
 import Select from '../select';
 import MiniSelect from './MiniSelect';
 
@@ -28,28 +28,29 @@ export interface PaginationProps {
   itemRender?: (page: number, type: 'page' | 'prev' | 'next' | 'jump-prev' | 'jump-next') => React.ReactNode;
 }
 
-abstract class Pagination extends React.Component<PaginationProps, any> {
+export default class Pagination extends React.Component<PaginationProps, any> {
   static defaultProps = {
     prefixCls: 'ant-pagination',
     selectPrefixCls: 'ant-select',
   };
 
-  abstract getLocale();
-
   render() {
     const { className, size, ...restProps } = this.props;
-    const locale = this.getLocale();
     const isSmall = size === 'small';
     return (
-      <RcPagination
-        {...restProps}
-        className={classNames(className, { mini: isSmall })}
-        selectComponentClass={isSmall ? MiniSelect : Select}
-        locale={locale}
-      />
+      <LocaleConsumer
+        componentName="Pagination"
+        defaultLocale={enUS}
+      >
+        {(locale) => (
+          <RcPagination
+            {...restProps}
+            className={classNames(className, { mini: isSmall })}
+            selectComponentClass={isSmall ? MiniSelect : Select}
+            locale={locale}
+          />
+        )}
+      </LocaleConsumer>
     );
   }
 }
-
-const injectPaginationLocale = injectLocale('Pagination', enUS);
-export default injectPaginationLocale<PaginationProps>(Pagination as any);

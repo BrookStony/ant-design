@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import RcSelect, { Option, OptGroup } from 'rc-select';
 import classNames from 'classnames';
+import LocaleConsumer from '../locale-provider/LocaleConsumer';
 import enUS from '../locale-provider/en_US';
 import warning from '../_util/warning';
 
@@ -63,12 +64,6 @@ export interface OptGroupProps {
   label?: string | React.ReactElement<any>;
 }
 
-export interface SelectContext {
-  antLocale?: {
-    Select?: any,
-  };
-}
-
 const SelectPropTypes = {
   prefixCls: PropTypes.string,
   className: PropTypes.string,
@@ -97,20 +92,6 @@ export default class Select extends React.Component<SelectProps, any> {
 
   static propTypes = SelectPropTypes;
 
-  static contextTypes = {
-    antLocale: PropTypes.object,
-  };
-
-  context: SelectContext;
-
-  getLocale() {
-    const { antLocale } = this.context;
-    if (antLocale && antLocale.Select) {
-      return antLocale.Select;
-    }
-    return enUS.Select;
-  }
-
   render() {
     const {
       prefixCls,
@@ -133,11 +114,9 @@ export default class Select extends React.Component<SelectProps, any> {
       [`${prefixCls}-sm`]: size === 'small',
     }, className);
 
-    const locale = this.getLocale();
-    let { notFoundContent = locale.notFoundContent, optionLabelProp } = this.props;
+    let { notFoundContent, optionLabelProp } = this.props;
     const isCombobox = mode === 'combobox' || combobox;
     if (isCombobox) {
-      notFoundContent = null;
       // children 带 dom 结构时，无法填入输入框
       optionLabelProp = optionLabelProp || 'value';
     }
@@ -149,14 +128,25 @@ export default class Select extends React.Component<SelectProps, any> {
     };
 
     return (
-      <RcSelect
-        {...restProps}
-        {...modeConfig}
-        prefixCls={prefixCls}
-        className={cls}
-        optionLabelProp={optionLabelProp || 'children'}
-        notFoundContent={notFoundContent}
-      />
+      <LocaleConsumer
+        componentName="Select"
+        defaultLocale={enUS.Select}
+      >
+        {(locale) => {
+          const notFoundContentLocale = isCombobox ?
+            null : notFoundContent || locale.notFoundContent;
+          return (
+            <RcSelect
+              {...restProps}
+              {...modeConfig}
+              prefixCls={prefixCls}
+              className={cls}
+              optionLabelProp={optionLabelProp || 'children'}
+              notFoundContent={notFoundContentLocale}
+            />
+          );
+        }}
+      </LocaleConsumer>
     );
   }
 }

@@ -3,7 +3,7 @@ import Tooltip, { AbstractTooltipProps }  from '../tooltip';
 import Icon from '../icon';
 import Button from '../button';
 import { ButtonType } from '../button/button';
-import injectLocale from '../locale-provider/injectLocale';
+import LocaleConsumer from '../locale-provider/LocaleConsumer';
 import enUS from '../locale-provider/en_US';
 
 export interface PopconfirmProps extends AbstractTooltipProps {
@@ -15,7 +15,7 @@ export interface PopconfirmProps extends AbstractTooltipProps {
   cancelText?: React.ReactNode;
 }
 
-abstract class Popconfirm extends React.Component<PopconfirmProps, any> {
+export default class Popconfirm extends React.Component<PopconfirmProps, any> {
   static defaultProps = {
     prefixCls: 'ant-popover',
     transitionName: 'zoom-big',
@@ -33,8 +33,6 @@ abstract class Popconfirm extends React.Component<PopconfirmProps, any> {
       visible: props.visible,
     };
   }
-
-  abstract getLocale();
 
   componentWillReceiveProps(nextProps: PopconfirmProps) {
     if ('visible' in nextProps) {
@@ -86,25 +84,31 @@ abstract class Popconfirm extends React.Component<PopconfirmProps, any> {
 
   render() {
     const { prefixCls, title, placement, okText, okType, cancelText, ...restProps } = this.props;
-    const popconfirmLocale = this.getLocale();
 
     const overlay = (
-      <div>
-        <div className={`${prefixCls}-inner-content`}>
-          <div className={`${prefixCls}-message`}>
-            <Icon type="exclamation-circle" />
-            <div className={`${prefixCls}-message-title`}>{title}</div>
+      <LocaleConsumer
+        componentName="Popconfirm"
+        defaultLocale={enUS.Popconfirm}
+      >
+        {(popconfirmLocale) => (
+          <div>
+            <div className={`${prefixCls}-inner-content`}>
+              <div className={`${prefixCls}-message`}>
+                <Icon type="exclamation-circle" />
+                <div className={`${prefixCls}-message-title`}>{title}</div>
+              </div>
+              <div className={`${prefixCls}-buttons`}>
+                <Button onClick={this.onCancel} size="small">
+                  {cancelText || popconfirmLocale.cancelText}
+                </Button>
+                <Button onClick={this.onConfirm} type={okType} size="small">
+                  {okText || popconfirmLocale.okText}
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className={`${prefixCls}-buttons`}>
-            <Button onClick={this.onCancel} size="small">
-              {cancelText || popconfirmLocale.cancelText}
-            </Button>
-            <Button onClick={this.onConfirm} type={okType} size="small">
-              {okText || popconfirmLocale.okText}
-            </Button>
-          </div>
-        </div>
-      </div>
+        )}
+      </LocaleConsumer>
     );
 
     return (
@@ -120,6 +124,3 @@ abstract class Popconfirm extends React.Component<PopconfirmProps, any> {
     );
   }
 }
-
-const injectPopconfirmLocale = injectLocale('Popconfirm', enUS.Popconfirm);
-export default injectPopconfirmLocale<PopconfirmProps>(Popconfirm as any);

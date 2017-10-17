@@ -1,18 +1,12 @@
 import React from 'react';
 import RcUpload from 'rc-upload';
-import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import LocaleConsumer from '../locale-provider/LocaleConsumer';
 import enUS from '../locale-provider/en_US';
 import Dragger from './Dragger';
 import UploadList from './UploadList';
 import { UploadProps, UploadLocale } from './interface';
 import { T, fileToObject, genPercentAdd, getFileItem, removeFileItem } from './utils';
-
-export interface UploadContext {
-  antLocale?: {
-    Upload?: any,
-  };
-}
 
 const defaultLocale: UploadLocale = enUS.Upload;
 
@@ -36,12 +30,6 @@ export default class Upload extends React.Component<UploadProps, any> {
     supportServerRender: true,
   };
 
-  static contextTypes = {
-    antLocale: PropTypes.object,
-  };
-
-  context: UploadContext;
-
   recentUploadStatus: boolean | PromiseLike<any>;
   progressTimer: any;
 
@@ -57,18 +45,6 @@ export default class Upload extends React.Component<UploadProps, any> {
 
   componentWillUnmount() {
     this.clearProgressTimer();
-  }
-
-  getLocale() {
-    let locale = {};
-    if (this.context.antLocale && this.context.antLocale.Upload) {
-      locale = this.context.antLocale.Upload;
-    }
-    return {
-      ...defaultLocale,
-      ...locale,
-      ...this.props.locale,
-    };
   }
 
   onStart = (file) => {
@@ -256,15 +232,22 @@ export default class Upload extends React.Component<UploadProps, any> {
 
     const { showRemoveIcon, showPreviewIcon } = showUploadList as any;
     const uploadList = showUploadList ? (
-      <UploadList
-        listType={listType}
-        items={this.state.fileList}
-        onPreview={onPreview}
-        onRemove={this.handleManualRemove}
-        showRemoveIcon={showRemoveIcon}
-        showPreviewIcon={showPreviewIcon}
-        locale={this.getLocale()}
-      />
+      <LocaleConsumer
+        componentName="Upload"
+        defaultLocale={defaultLocale}
+      >
+        {(locale) => (
+          <UploadList
+            listType={listType}
+            items={this.state.fileList}
+            onPreview={onPreview}
+            onRemove={this.handleManualRemove}
+            showRemoveIcon={showRemoveIcon}
+            showPreviewIcon={showPreviewIcon}
+            locale={{ ...locale, ...this.props.locale }}
+          />
+        )}
+      </LocaleConsumer>
     ) : null;
 
     if (type === 'drag') {
